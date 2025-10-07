@@ -1,3 +1,5 @@
+console.log('SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY?.substring(0,4));
+console.log('RECEIVER_EMAIL:', process.env.RECEIVER_EMAIL);
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');

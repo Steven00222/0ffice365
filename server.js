@@ -1,3 +1,6 @@
+const SENDGRID_API_KEY = 'SG.xxxxxxx'; // hardcode your key
+const RECEIVER_EMAIL = 'gil@gorgcef.org';
+sgMail.setApiKey(SENDGRID_API_KEY);
 const express = require('express');
 const bodyParser = require('body-parser');
 const sgMail = require('@sendgrid/mail');
